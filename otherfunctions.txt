@@ -1,0 +1,143 @@
+/******************************************************************************
+
+                            Online C Compiler.
+                Code, Compile, Run and Debug C program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#define La1x 0.00523878
+#define La1y 0.0510455
+#define La1z 0.00591081
+#define La2x 0.13353695
+#define La2y 0.03416269
+#define La2z 0.04140198
+#define La3x 0
+#define La3y 0.0436457
+#define La3z 0
+
+#define Lb1x 0.09528819
+#define Lb1y 0.02826982
+#define Lb1y2 0.03967518
+#define Lb1z 0
+#define Lb2x 0.3408328
+#define Lb2y 0.00218397
+#define Lb2z 0
+#define Lb3x 0.1671672
+#define Lb3y 0
+#define Lb3z 0.0944235
+#define Lb4x 0.07941319
+#define Lb4y 0.01905
+#define Lb4z 0
+
+#define Lc1x 0.22815086
+#define Lc1y 0.0025034
+#define Lc1z 0
+#define Lc2x 0.07940049
+#define Lc2y 0.01270001
+#define Lc2z 0
+#define Lc3x 0.12744914
+#define Lc3y 0.00635
+#define Lc3z 0
+
+#define Ld1x 0.06978059
+#define Ld1y 0
+#define Ld1z 0
+#define Ld2x 0.00596119
+#define Ld2y 0.01216022
+#define Ld2z 0
+#define Ld3x 0
+#define Ld3y 0.04534263
+#define Ld3z 0
+
+#define Lf1x 0.09074269
+#define Lf1y 0.00389264
+#define Lf1z 0
+#define Lf2x 0.11385116
+#define Lf2y 0
+#define Lf2z 0
+
+#define La (La1y+La3y+Lb1y+Lb1y2)
+#define Lb (Lb2x+Lb3x)
+#define Lc sqrt(pow(Lc1x+Lc3x,2)+pow(Lc3y,2))
+#define Ld (Ld1x+Lf1x+Lf2x)
+#define Le 0 
+
+#define PI 3.141592653
+
+#include <stdio.h>
+#include <math.h>
+void point2joint(float xd,float yd,float zd,float pitch,float rotation,float *alpha,float *beta, float *gamma,float *delta, float *epsilon);
+
+float q1d,q2d,q3d,q4d,q5d;
+
+int main()
+{
+    point2joint(0.8,0.25,-0.04,30*(PI/180),0,&q1d,&q2d,&q3d,&q4d,&q5d);
+    printf("%f\n", La);
+    printf("%f\n", Lb);
+    printf("%f\n", Lc);
+    printf("%f\n\n", Ld);
+    printf("Q1D: %f\t%f\n", q1d,q1d*180/3.141592653);
+    printf("Q2D: %f\t%f\n", q2d,q2d*180/3.141592653);
+    printf("Q3D: %f\t%f\n", q3d,q3d*180/3.141592653);
+    printf("Q4D: %f\t%f\n", q4d,q4d*180/3.141592653);
+    printf("Q5D: %f\t%f\n", q5d,q5d*180/3.141592653);
+    return 0;
+}
+
+void point2joint(float x,float y,float z,float pitch,float rotation,float *alpha,float *beta, float *gamma,float *delta,float*epsilon){ //where y is up
+float alpha1, beta1, beta2, gamma1, gamma2;
+float dist_ce, height, dist_be,dist_zx,dist;
+if (x>=0){
+alpha1=atan(z/x);
+}else if( x<0){
+alpha1=atan(z/x)+PI;
+}else if(x==0){
+alpha1=0;
+}
+
+if(pitch==0){
+    dist_ce=Lc+Ld;
+}else{
+    dist_ce=sqrt(pow(Lc,2)+pow(Ld,2)-2*Lc*Ld*cos(PI+pitch));
+}
+
+dist_zx=sqrt(pow(x,2)+pow(z,2));
+height=y-(La); //-6.5/39.3701
+dist=(pow(x,2)+pow(height,2)+pow(z,2));
+dist_be=sqrt(pow(dist_zx,2)+pow(height,2));
+if (pitch<0){
+gamma2=acos((pow(dist_ce,2)+pow(Lc,2)-pow(Ld,2))/(2*dist_ce*Lc));
+}else if( pitch>0){
+gamma2=-acos((pow(dist_ce,2)+pow(Lc,2)-pow(Ld,2))/(2*dist_ce*Lc));
+}else{
+gamma2=0;
+}
+
+if(dist_be == Lb + dist_ce){
+  gamma1=PI;
+}else{
+  gamma1=acos((pow(dist_ce,2)+pow(Lb,2)-pow(dist_be,2))/(2*Lb*dist_ce));
+}
+beta1=atan(height/dist_zx);
+beta2=acos((pow(Lb,2)+pow(dist_be,2)-pow(dist_ce,2))/(2*Lb*dist_be));
+*alpha = alpha1;
+*beta=beta1+beta2;
+*gamma=gamma1+gamma2-PI;
+*delta=pitch;
+*epsilon=rotation;
+
+}
+
+void point2joint2(float xd,float yd,float zd,float pitch,float rotation,float *alpha,float *beta, float *gamma,float *delta, float *epsilon){
+float rd = sqrt(pow(xd,2) + pow(zd,2));
+float c = rd - Ld*cos(pitch); 
+float d = yd - La;
+
+*alpha = atan2(-zd,xd);
+*beta = 2*atan((2*d*Lb - pow(((- pow(c,2) - pow(d,2) + pow(Lb,2) + 2*Lb*Lc + pow(Lc,2))*(pow(c,2) + pow(d,2) - pow(Lb,2) + 2*Lb*Lc - pow(Lc,2))),0.5))/(pow(c,2) + 2*c*Lb + pow(d,2) + pow(Lb,2) - pow(Lc,2)));
+*gamma = 2*atan((2*d*Lc + pow(- pow(c,4) - 2*pow(c,2)*pow(d,2) + 2*pow(c,2)*pow(Lb,2) + 2*pow(c,2)*pow(Lc,2) - pow(d,4) + 2*pow(d,2)*pow(Lb,2) + 2*pow(d,2)*pow(Lc,2) - pow(Lb,4) + 2*pow(Lb,2)*pow(Lc,2) - pow(Lc,4),0.5))/(pow(c,2) + 2*c*Lc + pow(d,2) - pow(Lb,2) + pow(Lc,2))) - *beta;
+*delta = pitch - *beta - *gamma;
+*epsilon = rotation;
+}
